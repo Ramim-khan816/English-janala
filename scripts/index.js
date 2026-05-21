@@ -1,3 +1,9 @@
+const createElements = (arr)=>{
+const htmlElements = arr.map((el)=> `<span class="btn">${el}</span>`)
+return htmlElements.join(" ")
+}
+
+
 const loadLesson =()=>{
     fetch("https://openapi.programming-hero.com/api/levels/all")
     .then(res=> res.json())
@@ -5,6 +11,16 @@ const loadLesson =()=>{
     )
 }
 
+const manageSpiner=(status)=>{
+if(status==true){
+  document.getElementById("manage-spinner").classList.remove("hidden")
+  document.getElementById("word-container").classList.add("hidden")
+}
+else{
+  document.getElementById("word-container").classList.remove("hidden")
+  document.getElementById("manage-spinner").classList.add("hidden")
+}
+}
 
 const removeActive=()=>{
   const lessonBtn = document.querySelectorAll(".lesson-btn")
@@ -15,12 +31,14 @@ const removeActive=()=>{
 }
 
 const loadLevelWord=(id)=>{
+  manageSpiner(true)
 const url = `https://openapi.programming-hero.com/api/level/${id}`
 fetch(url)
 .then(res=> res.json())
 .then((data) => {
   const clickBtn = document.getElementById(`lesson-btn${id}`)
   clickBtn.classList.add("active")
+   
   displayLevelWord(data.data)
 })
 
@@ -40,6 +58,8 @@ if (words.length == 0){
        </div>
   
   `;
+  manageSpiner(false)
+  return
 }
 
 
@@ -52,7 +72,7 @@ words.forEach(word => {
                 <div class="font-bold"> ${word.meaning ? word.meaning : "word missing"}/ ${word.pronunciation ? word.pronunciation:"pronunciation missing"}</div>
               <div class="mt-10 flex justify-between items-center">
                   <div class="p-2 rounded-xl bg-gray-200">
-                  <i onclick="my_modal_5.showModal()" class="fa-solid fa-circle-info"></i>
+                  <i onclick="loadWordDetail(${word.id})" class="fa-solid fa-circle-info"></i>
                     
                   
                 </div>
@@ -66,7 +86,47 @@ words.forEach(word => {
      wordContainer.append(divCreate)
     
 });
+manageSpiner(false)
 }
+
+
+const loadWordDetail=async(id)=>{
+  const url = `https://openapi.programming-hero.com/api/word/${id}`
+  ;
+  const res =await fetch(url);
+  const details = await res.json();
+  displayWordDetails(details.data)
+  
+}
+
+const displayWordDetails = (word)=>{
+  const detailsBox = document.getElementById("details-container")
+  detailsBox.innerHTML= `
+  
+    
+          <div>
+            <h2>${word.word}(<i class="fa-etch fa-solid fa-microphone"></i> :${word.meaning} )</h2>
+            
+          </div>
+          <div>
+            <h2>Meaning</h2>
+            <p>${word.pronunciation}</p>
+          </div>
+           <div>
+            <h2>Exmple</h2>
+            <p> ${word.sentence}.</p>
+          </div>
+          <div>
+            <h2>synonyms</h2>
+            <p>${createElements(word.synonyms)}</p>
+             
+          </div>
+          
+  
+  
+  `
+  document.getElementById("my_modal_5").showModal();
+};
 
 
 const displayShow = (lessons)=>{
